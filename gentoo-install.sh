@@ -42,12 +42,6 @@
 #Mirror for portage snapshot and stage3 tarball
 MIRROR=http://mirror.mcs.anl.gov/
 
-#Rsync mirror
-SYNC=rsync://wash.firefly.michael.mol.name/gentoo-portage
-
-#HTTP proxy
-http_proxy=http://wash.firefly.michael.mol.name:8123
-
 #Mirror base path
 MIRROR_BASE_PATH=pub/gentoo/
 
@@ -58,26 +52,17 @@ STAGE_PATH=releases/amd64/current-stage3/
 PORTAGE_PATH=snapshots/
 
 #Stage3 tarball
-STAGE_BALL=stage3-amd64-20120621.tar.bz2
+STAGE_BALL=stage3-amd64-20130606.tar.bz2
 
 #Portage snapshot tarball
 PORTAGE_SNAPSHOT=portage-latest.tar.bz2
 
 #Root filesystem device
-ROOTDEV=/dev/md127
+ROOTDEV=/dev/vda1
 
-#Boot filesystem UUID
-FS_BOOT_UUID=3d43226b-ff73-4369-829c-bd5cf90b3063
-#Swap filesystem UUID
-FS_SWAP_UUID=f2a33afa-8d3c-4b57-849f-41fc03210b59
-#home filesystem UUID
-FS_HOME_UUID=d7c17623-255b-4313-b50b-99f0f79a0681
-#assigned later
-FS_ROOT_UUID=""
+ETC_CONFD_HOSTNAME="gentoo"
 
-ETC_CONFD_HOSTNAME="inara"
-
-ETC_TIMEZONE="America/Detroit"
+ETC_TIMEZONE="GMT"
 
 KERNEL_SOURCES="sys-kernel/gentoo-sources"
 
@@ -88,7 +73,7 @@ EOF
 #make.conf
 
 read -r -d '' MAKE_CONF <<'EOF'
-CFLAGS="-O2 -pipe -march=native -ggdb"
+CFLAGS="-O2 -pipe"
 CXXFLAGS="${CFLAGS}"
 
 SYS_CPU_TGT="6"
@@ -98,39 +83,9 @@ EMERGE_DEFAULT_OPTS="--jobs --load-average=${SYS_CPU_TGT} --verbose --tree --kee
 FEATURES="splitdebug"
 LINGUAS="en"
 
-SYS_USE_CPU="mmx sse sse2 sse3 ssse3 openmp opencl cuda posix nptl multilib smp lapack"
-SYS_USE_LANG="perl python"
-SYS_USE_TOOLKITS="gtk"
-SYS_USE_GAPI="gd sdl ncurses xcb opengl v4l vdpau xv X dri"
-SYS_USE_AAPI="openal alsa"
-SYS_USE_OTHER="acl alsa cdr crypt cups dvd dvdr firefox gmp iconv nsplugin offensive pcre pda rss spell taglib truetype videos vim-syntax xattr xcomposite xft xinerama xml xscreensaver fontconfig qt3support phonon"
-SYS_USE_COMPRESSION="bzip2 gzip lzma lzo szip zlib"
-SYS_USE_MEDIA_GFX="imagemagick jpeg jpeg2k openexr png raw svg tiff wmf mng"
-SYS_USE_MEDIA_AUDIO="aac cdda flac gsm lame mad mikmod shorten speex timidity vorbis mp3 midi"
-SYS_USE_MEDIA_VIDEO="css dv ffmpeg theora x264 xvid"
-SYS_USE_MEDIA_CONTAINERS="matroska mms mp4 mpeg ogg pdf quicktime vcd"
-SYS_USE_MEDIA="${SYS_USE_MEDIA_GFX} ${SYS_USE_MEDIA_AUDIO} ${SYS_USE_MEDIA_VIDEO} ${SYS_USE_MEDIA_CONTAINERS} sound cddb encode exif gimp libsamplerate mtp ppds sndfile sox wavpack xmp latex"
+USE="vim-syntax"
 
-SYS_USE_NET="avahi curl ftp geoip gnutls ipv6 libwww rdesktop samba sockets ssl tcpd vnc"
-SYS_USE_PLATFORM="acpi dbus fam hddtemp ieee1394 joystick libnotify lm_sensors pam readline sharedmem syslog sysvipc threads udev unicode usb"
-
-SYS_USE_DONOTWANT="-pulseaudio -gnome -oss -berkdb -gdbm"
-
-USE="${SYS_USE_CPU} ${SYS_USE_LANG} ${SYS_USE_TOOLKITS} ${SYS_USE_GAPI} ${SYS_USE_AAPI} ${SYS_USE_OTHER} ${SYS_USE_MEDIA} ${SYS_USE_COMPRESSION} ${SYS_USE_NET} ${SYS_USE_PLATFORM} ${SYS_USE_DONOTWANT}"
-
-GENTOO_MIRRORS="http://chi-10g-1-mirror.fastsoft.net/pub/linux/gentoo/gentoo-distfiles/ http://mirrors.cs.wmich.edu/gentoo http://gentoo.mirrors.tds.net/gentoo"
-
-VIDEO_CARDS="nvidia"
-INPUT_DEVICES="evdev"
-ALSA_CARDS=""
-
-ACCEPT_LICENSE="AdobeFlash-10.3"
-# PORTAGE_BINHOST="http://binhost.ossdl.de/x86_64-pc-linux-gnu/"
-
-#PKGDIR="/mnt/r5/pkgdir"
-#PORTAGE_TMPDIR="/mnt/r5/portage_tmp"
-
-CHOST="x86_64-pc-linux-gnu"
+ACCEPT_LICENSE="*"
 EOF
 
 logger "Gentoo install: Grabbing release and portage tarballs"
@@ -189,15 +144,9 @@ echo "$ETC_TIMEZONE" > /mnt/gentoo/etc/timezone
 
 cp "/mnt/gentoo/usr/share/zoneinfo/$ETC_TIMEZONE" /mnt/gentoo/etc/localtime
 
-logger "Gentoo install: Adding rsync mirror"
-echo "SYNC=$SYNC" >> /mnt/gentoo/etc/make.conf
-
 logger "Gentoo install: Copying autodiscovered DNS details"
 
 cp -L /etc/resolv.conf /mnt/gentoo/etc/resolv.conf
-
-logger "Gentoo install: Installing proxy details into install environment"
-echo "http_proxy=$http_proxy" > /mnt/gentoo/etc/env.d/02proxy
 
 logger "Gentoo install: Mounting dev, proc, etc in target environment"
 
@@ -220,14 +169,9 @@ export PS1="(autochroot) $PS1" # Not that the user will see this.
 # _after_ the chroot?
 
 # Extract data passed to us from the pre-chroot script.
-FS_ROOT_UUID="$1"
-FS_BOOT_UUID="$2"
-FS_SWAP_UUID="$3"
-FS_HOME_UUID="$4"
-ETC_CONFD_HOSTNAME="$5"
-ETC_CONFD_NET_FILE_CONTENT="$6"
-http_proxy="$7"
-KERNEL_SOURCES="$8"
+ETC_CONFD_HOSTNAME="$1"
+ETC_CONFD_NET_FILE_CONTENT="$2"
+KERNEL_SOURCES="$3"
 
 script_fail() {
     logger "Gentoo install: Failing out"
@@ -263,11 +207,7 @@ script_write_fstab() {
     # Clear out what's already there, first.
     echo "" > /etc/fstab
 
-    echo "UUID=$FS_BOOT_UUID\t/boot\text4\tdefaults,noatime\t1\t2" >> /etc/fstab
-    echo "UUID=$FS_SWAP_UUID\tnone\tswap\tsw\t0\t0" >> /etc/fstab
-    echo "UUID=$FS_ROOT_UUID\t/\text4\tnoatime\t0\t1" >> /etc/fstab
-    echo "UUID=$FS_HOME_UUID\t/home\text4\tnoatime\t0\t1" >> /etc/fstab
-    echo "/dev/cdrom\t/mnt/cdrom\tauto\tuser,noauto\t0\t0" >> /etc/fstab
+    echo "/dev/vda1\t/\text4\tnoatime\t0\t1" >> /etc/fstab
 }
 
 script_conf_hostname() {
@@ -299,7 +239,7 @@ script_conf_locales_select() {
 }
 
 script_conf_locales() {
-    script_conf_locales_write
+    script_conf_locales_gen_write
     locale-gen
     script_check_fail
 
@@ -470,7 +410,7 @@ echo "$INNER_SCRIPT" > /mnt/gentoo/chroot_inner_script.sh
 echo "Running chroot script"
 
 # and run it. Wish us luck!
-chroot /mnt/gentoo/ /bin/bash /chroot_inner_script.sh "$FS_ROOT_UUID" "$FS_BOOT_UUID" "$FS_SWAP_UUID" "$FS_HOME_UUID" "$ETC_CONFD_HOSTNAME" "$ETC_CONFD_NET_FILE_CONTENT" "$http_proxy" "$KERNEL_SOURCES"
+chroot /mnt/gentoo/ /bin/bash /chroot_inner_script.sh "$ETC_CONFD_HOSTNAME" "$ETC_CONFD_NET_FILE_CONTENT" "$KERNEL_SOURCES"
 
 if [[ $? -ne 0 ]]; then
     echo "chroot install script failed. Read output, collect logs, submit bugs..."
