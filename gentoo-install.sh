@@ -40,19 +40,19 @@
 # Patches very welcome.
 
 #Mirror for portage snapshot and stage3 tarball
-MIRROR=http://mirror.mcs.anl.gov/
+MIRROR=http://mirror.yandex.ru/
 
 #Mirror base path
-MIRROR_BASE_PATH=pub/gentoo/
+MIRROR_BASE_PATH=gentoo-distfiles/
 
 #stage 3 relative path
-STAGE_PATH=releases/amd64/current-stage3/
+STAGE_PATH=releases/amd64/autobuilds/current-stage3-amd64/
 
 #portage snapshot relative path
 PORTAGE_PATH=snapshots/
 
 #Stage3 tarball
-STAGE_BALL=stage3-amd64-20130606.tar.bz2
+STAGE_BALL=stage3-amd64-20150305.tar.bz2
 
 #Portage snapshot tarball
 PORTAGE_SNAPSHOT=portage-latest.tar.bz2
@@ -415,4 +415,3 @@ chroot /mnt/gentoo/ /bin/bash /chroot_inner_script.sh "$ETC_CONFD_HOSTNAME" "$ET
 if [[ $? -ne 0 ]]; then
     echo "chroot install script failed. Read output, collect logs, submit bugs..."
 fi
-
